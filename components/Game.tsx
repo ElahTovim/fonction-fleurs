@@ -24,7 +24,7 @@ export function Game({ code }: { code: string }) {
   const [result, setResult] = useState<Result | null>(null);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [now, setNow] = useState(Date.now());
+  const [, setNow] = useState(Date.now()); // tic de rendu pour le chrono
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const token = useRef("");
@@ -116,8 +116,8 @@ export function Game({ code }: { code: string }) {
 
   const myTurn = game.status === "playing" && game.turn_seat === seat;
   const opponent = seat === 1 ? game.p2_name : game.p1_name;
-  const elapsed = turn ? Math.floor((now - turn.startedAt) / 1000) : 0;
-  const botLeft = game.bot_due_at ? Math.max(0, Math.ceil((new Date(game.bot_due_at).getTime() - now) / 1000)) : 0;
+  const elapsed = turn ? Math.max(0, Math.floor((Date.now() - turn.startedAt) / 1000)) : 0;
+  const botLeft = game.bot_due_at ? Math.max(0, Math.ceil((new Date(game.bot_due_at).getTime() - Date.now()) / 1000)) : 0;
 
   return (
     <main className="shell">
