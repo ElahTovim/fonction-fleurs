@@ -6,8 +6,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Jeu des fleurs",
-  description: "Résous une équation, gagne une fleur. Le premier bouquet complet gagne.",
+  title: "Fonction fleurs",
+  description: "Résolvez une équation, gagnez une fleur. Le premier bouquet de cinq gagne.",
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 1 };
 

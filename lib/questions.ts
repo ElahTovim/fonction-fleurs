@@ -6,6 +6,7 @@ export type Question = {
   notion: string;
   lesson: number;
   text: string;
+  data?: string; // valeurs chiffrées, affichées à part de la phrase
   kind: "number" | "choice";
   choices?: string[];
   answer: string; // nombre (en texte) ou index du choix
@@ -179,7 +180,7 @@ const generators: Array<() => Question> = [
     if (d2.filter(d => d === min).length > 1) return generators[11]();
     const best = d2.indexOf(min);
     return mcq(
-      { notion: "Minimisation", lesson: 9, text: `P = ${vec(P)}. Lequel de ces points est le plus proche de P ? ${cands.map((c, i) => `${"ABC"[i]} = ${vec(c)}`).join(", ")}.`, explain: `Distances au carré : ${d2.join(", ")}. Le plus petit est ${"ABC"[best]}.` },
+      { notion: "Minimisation", lesson: 9, text: `Lequel de ces points est le plus proche de P = ${vec(P)} ?`, data: cands.map((c, i) => `${"ABC"[i]} = ${vec(c)}`).join("    "), explain: `Distances au carré : ${d2.join(", ")}. Le plus petit est ${"ABC"[best]}.` },
       "ABC"[best], ["A", "B", "C"].filter(l => l !== "ABC"[best])
     );
   },
@@ -190,7 +191,7 @@ const generators: Array<() => Question> = [
     const out = center + pick([-9, -8, 9, 10, 12]) ;
     const all = shuffle([...xs, out]);
     return mcq(
-      { notion: "Partition, clusters, outliers", lesson: 10, text: `Notes de la classe : ${all.join(", ")}. Laquelle est l'outlier ?`, explain: `Toutes les notes se tiennent autour de ${center}, sauf ${out}, loin du groupe.` },
+      { notion: "Partition, clusters, outliers", lesson: 10, text: "Laquelle de ces notes est l'outlier ?", data: all.join("   "), explain: `Toutes les notes se tiennent autour de ${center}, sauf ${out}, loin du groupe.` },
       String(out), Array.from(new Set(xs)).map(String)
     );
   },
@@ -201,7 +202,8 @@ const generators: Array<() => Question> = [
     const pts = centers.flatMap(c => [c, c + 1, c + 2]);
     return {
       notion: "Partition, clusters, outliers", lesson: 10, kind: "number",
-      text: `Valeurs observées : ${shuffle(pts).join(", ")}. Combien de groupes naturels (clusters) voyez-vous ?`,
+      text: "Combien de groupes naturels (clusters) voyez-vous ?",
+      data: shuffle(pts).join("   "),
       answer: String(k),
       explain: `Les valeurs se regroupent autour de ${centers.join(", ")} : ${k} clusters.`,
     };

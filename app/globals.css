@@ -1,75 +1,275 @@
+/* Fonction fleurs. Une planche d'herbier : fond papier, filets fins,
+   chiffres en mono comme sur un instrument. Toute la couleur est réservée
+   aux spécimens, c'est à dire aux fleurs gagnées. */
+
 :root {
-  --bg: #FAF7F0;
-  --paper: #FFFFFF;
-  --ink: #1E2A22;
-  --muted: #6B7268;
-  --line: #E4DFD3;
-  --green: #2F6B45;
-  --green-soft: #E3EFE6;
-  --gold: #C9931B;
-  --danger: #B23A3A;
-  --radius: 16px;
+  --paper: oklch(0.985 0.005 120);
+  --paper-2: oklch(0.955 0.008 130);
+  --ink: oklch(0.24 0.02 160);
+  --ink-2: oklch(0.46 0.016 160);
+  --ink-3: oklch(0.5 0.016 160);
+  --rule: oklch(0.87 0.01 145);
+  --accent: oklch(0.44 0.1 155);
+  --accent-2: oklch(0.37 0.1 155);
+  --accent-wash: oklch(0.94 0.03 150);
+  --on-accent: oklch(0.985 0.01 150);
+  --amber: oklch(0.52 0.13 72);
+  --clay: oklch(0.5 0.15 32);
+  --stem: oklch(0.55 0.1 148);
+  --stem-ink: oklch(0.36 0.08 150);
+
+  --r-surface: 10px;
+  --r-control: 8px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: oklch(0.2 0.014 165);
+    --paper-2: oklch(0.25 0.016 165);
+    --ink: oklch(0.95 0.008 150);
+    --ink-2: oklch(0.77 0.012 150);
+    --ink-3: oklch(0.7 0.012 150);
+    --rule: oklch(0.34 0.016 155);
+    --accent: oklch(0.74 0.13 152);
+    --accent-2: oklch(0.81 0.13 152);
+    --accent-wash: oklch(0.28 0.04 155);
+    --on-accent: oklch(0.18 0.03 160);
+    --amber: oklch(0.78 0.13 78);
+    --clay: oklch(0.68 0.14 34);
+    --stem: oklch(0.62 0.1 148);
+    --stem-ink: oklch(0.44 0.08 150);
+  }
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
+html { height: 100%; -webkit-text-size-adjust: 100%; }
+
 body {
-  background: var(--bg);
+  min-height: 100%;
+  background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  line-height: 1.45;
 }
-button, input { font: inherit; }
-h1, h2, h3 { text-wrap: balance; line-height: 1.15; }
 
-.shell { max-width: 480px; margin: 0 auto; padding: 20px 16px 48px; min-height: 100dvh; display: flex; flex-direction: column; gap: 16px; }
-.brand { display: flex; align-items: baseline; justify-content: space-between; }
-.brand__title { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
-.brand__sub { font-size: 13px; color: var(--muted); }
+h1, h2, h3 { text-wrap: balance; line-height: 1.14; letter-spacing: -0.018em; font-weight: 560; }
+p { text-wrap: pretty; }
+button, input { font: inherit; color: inherit; }
 
-.card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
-.card--accent { background: var(--green-soft); border-color: transparent; }
-.stack { display: flex; flex-direction: column; gap: 12px; }
-.row { display: flex; gap: 10px; }
-.muted { color: var(--muted); font-size: 14px; }
-.small { font-size: 13px; }
-.tag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--green); }
+/* Tous les nombres du jeu sont en mono tabulaire : ils changent sans bouger. */
+.num, .timer__value {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
 
-.input { width: 100%; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: 18px; }
-.input:focus { outline: none; border-color: var(--green); }
-.btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--green); color: #fff; font-size: 17px; font-weight: 600; cursor: pointer; }
-.btn:disabled { opacity: 0.5; cursor: default; }
-.btn--ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--line); }
-.btn--small { width: auto; padding: 10px 14px; font-size: 14px; }
-.chips { display: flex; gap: 8px; }
-.chip { flex: 1; padding: 10px 6px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; font-size: 14px; cursor: pointer; }
-.chip--on { border-color: var(--green); background: var(--green-soft); font-weight: 600; }
+.sheet {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 18px 18px 40px;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
 
-.bouquet { background: var(--paper); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
-.bouquet--active { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
-.bouquet__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-.bouquet__name { font-weight: 600; }
-.bouquet__score { font-size: 12px; color: var(--muted); }
-.bouquet__flowers { display: flex; justify-content: space-between; }
+/* En tête */
+.masthead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.masthead__title { font-size: 17px; font-weight: 580; letter-spacing: -0.02em; }
+.masthead__meta { font-size: 13px; color: var(--ink-3); }
 
-.question { font-size: 22px; font-weight: 500; line-height: 1.3; }
-.timer { font-variant-numeric: tabular-nums; font-size: 15px; color: var(--muted); }
-.timer--gold { color: var(--gold); font-weight: 600; }
-.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.choice { padding: 16px 10px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-size: 18px; cursor: pointer; }
-.choice:active { background: var(--green-soft); }
+/* Bloc d'accueil */
+.lede { font-size: 15px; color: var(--ink-2); max-width: 34em; }
+.display {
+  font-size: clamp(2rem, 9.5vw, 2.6rem);
+  font-weight: 580;
+  letter-spacing: -0.032em;
+  line-height: 1.06;
+}
 
-.result { text-align: center; }
-.result__title { font-size: 24px; font-weight: 600; margin-bottom: 6px; }
-.result--ok .result__title { color: var(--green); }
-.result--ko .result__title { color: var(--danger); }
-.explain { font-size: 15px; color: var(--muted); margin-top: 6px; }
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field__label { font-size: 13px; font-weight: 540; color: var(--ink-2); }
 
-.event { font-size: 14px; color: var(--ink); background: var(--paper); border-left: 3px solid var(--green); padding: 10px 12px; border-radius: 0 10px 10px 0; }
-.winner { text-align: center; padding: 28px 12px; }
-.winner__name { font-size: 34px; font-weight: 700; color: var(--green); letter-spacing: -0.02em; }
-.share { word-break: break-all; font-family: var(--font-geist-mono), monospace; font-size: 13px; background: #fff; border: 1px dashed var(--line); border-radius: 10px; padding: 10px; }
-.legend { display: flex; justify-content: space-around; font-size: 12px; color: var(--muted); }
-.legend div { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.pulse { animation: pulse 1.4s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid var(--rule);
+  border-radius: var(--r-control);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 17px;
+  transition: border-color 140ms var(--ease-out);
+}
+.input::placeholder { color: var(--ink-3); }
+.input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash); }
+
+.btn {
+  width: 100%;
+  padding: 15px 18px;
+  border: none;
+  border-radius: var(--r-control);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 16px;
+  font-weight: 560;
+  letter-spacing: -0.008em;
+  cursor: pointer;
+  transition: transform 130ms var(--ease-out), background-color 140ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .btn:hover:not(:disabled) { background: var(--accent-2); } }
+.btn:active:not(:disabled) { transform: scale(0.985); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn--quiet { background: transparent; color: var(--ink); border: 1.5px solid var(--rule); }
+@media (hover: hover) and (pointer: fine) { .btn--quiet:hover:not(:disabled) { background: var(--paper-2); } }
+
+/* Sélecteur de robot */
+.segments { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.segment {
+  padding: 13px 4px;
+  border: 1.5px solid var(--rule);
+  border-radius: var(--r-control);
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 140ms var(--ease-out), background-color 140ms var(--ease-out);
+}
+.segment[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-wash); font-weight: 560; }
+.segment:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Planche : une rangée de spécimens posée sur son filet */
+.plate { padding: 12px 14px 0; border-radius: var(--r-surface); transition: background-color 200ms var(--ease-out); }
+.plate--active { background: var(--paper-2); }
+.plate__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.plate__name { font-size: 16px; font-weight: 560; display: flex; align-items: baseline; gap: 7px; }
+.plate--active .plate__name { color: var(--accent); }
+.plate__you {
+  font-size: 11px; font-weight: 560; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--ink-3); border: 1px solid var(--rule); border-radius: 999px; padding: 1px 6px;
+}
+.plate__count { font-size: 13px; color: var(--ink-3); display: flex; align-items: baseline; gap: 5px; }
+.plate__sep { font-size: 11px; }
+.plate__beauty { margin-left: 4px; }
+.plate__row {
+  list-style: none; display: flex; justify-content: space-between; align-items: flex-end;
+  margin-top: 2px; border-bottom: 1px solid var(--rule);
+}
+.plate__row li { display: flex; }
+
+/* Zone d'action */
+.panel { display: flex; flex-direction: column; gap: 14px; animation: rise 220ms var(--ease-out); }
+.panel__kicker { font-size: 13px; font-weight: 540; color: var(--ink-2); }
+.question {
+  font-size: clamp(1.45rem, 6.4vw, 1.85rem);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.source { font-size: 12.5px; color: var(--ink-3); }
+
+.qhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+
+/* Chronomètre : l'anneau dit quelle fleur est encore atteignable */
+.timer { position: relative; flex: none; width: 62px; height: 62px; }
+.timer svg { transform: rotate(-90deg); }
+.timer__track { stroke: var(--rule); }
+.timer__arc { transition: stroke-dashoffset 240ms linear, stroke 240ms var(--ease-out); }
+.timer__value {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 15px; font-weight: 560;
+}
+.timer__tier { font-size: 12px; color: var(--ink-3); text-align: center; margin-top: 3px; }
+
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.choice {
+  padding: 15px 8px;
+  border: 1.5px solid var(--rule);
+  border-radius: var(--r-control);
+  background: var(--paper);
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 130ms var(--ease-out), border-color 140ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .choice:hover:not(:disabled) { border-color: var(--accent); } }
+.choice:active:not(:disabled) { transform: scale(0.98); }
+.choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.choice:disabled { opacity: 0.5; }
+
+/* Verdict */
+.verdict { display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
+.verdict__line { font-size: 21px; font-weight: 560; letter-spacing: -0.02em; }
+.verdict--ok .verdict__line { color: var(--accent); }
+.verdict--ko .verdict__line { color: var(--clay); }
+.verdict__why { font-size: 14.5px; color: var(--ink-2); max-width: 32em; }
+
+.log { font-size: 13.5px; color: var(--ink-2); padding-top: 12px; border-top: 1px solid var(--rule); }
+
+.share {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px; word-break: break-all; color: var(--ink-2);
+  background: var(--paper-2); border-radius: var(--r-control); padding: 11px 12px;
+}
+
+.legend { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--rule); }
+.legend figure { display: flex; flex-direction: column; align-items: center; }
+.legend figcaption { font-size: 12px; color: var(--ink-3); padding-bottom: 8px; }
+
+.finale { text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; padding: 10px 0 4px; }
+.finale__name { font-size: clamp(1.9rem, 8.5vw, 2.4rem); font-weight: 600; letter-spacing: -0.03em; color: var(--accent); }
+
+.thinking { display: flex; align-items: center; gap: 9px; color: var(--ink-2); font-size: 15px; }
+.thinking__dot { width: 7px; height: 7px; border-radius: 999px; background: var(--accent); animation: throb 1.1s ease-in-out infinite; }
+
+/* Mouvement. Une fleur s'ouvre pétale par pétale quand elle est gagnée. */
+@keyframes petal-in { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+@keyframes heart-in { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes rise { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+@keyframes throb { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+.flower--new .petal {
+  animation: petal-in 300ms var(--ease-out) backwards;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.flower--new .flower__heart {
+  animation: heart-in 240ms var(--ease-out) 150ms backwards;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .flower--new .petal, .flower--new .flower__heart, .panel { animation: none; }
+}
+
+.answer { display: flex; gap: 8px; }
+.answer .input { flex: 1; min-width: 0; }
+.sign {
+  flex: none; width: 58px;
+  border: 1.5px solid var(--rule);
+  border-radius: var(--r-control);
+  background: var(--paper);
+  font-size: 19px;
+  cursor: pointer;
+  transition: transform 130ms var(--ease-out), border-color 140ms var(--ease-out);
+}
+.sign:active { transform: scale(0.97); }
+.sign:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Les valeurs chiffrées d'une question sortent de la phrase :
+   en mono, espacées, elles se lisent comme un relevé. */
+.data {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 15.5px;
+  line-height: 1.8;
+  color: var(--ink-2);
+  padding: 10px 12px;
+  background: var(--paper-2);
+  border-radius: var(--r-control);
+  margin-top: -4px;
+}

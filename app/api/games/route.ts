@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     bouquet_size: BOUQUET_SIZE,
     p1_name: name.trim().slice(0, 20),
     p2_name: solo ? BOT[level!].name : null,
-    last_event: solo ? "La partie commence. À toi de jouer." : "En attente d'un adversaire…",
+    last_event: solo ? "La partie commence." : "En attente d'un adversaire.",
   });
   if (error) return json({ error: error.message }, 500);
   await db.from("players").insert({ game_code: code, seat: 1, name: name.trim().slice(0, 20), token });

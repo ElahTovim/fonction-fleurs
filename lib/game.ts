@@ -10,14 +10,26 @@ export function qualityFor(elapsedMs: number): 1 | 2 | 3 {
   return 1;
 }
 export const QUALITY_LABEL: Record<number, string> = { 3: "fleur épanouie", 2: "fleur", 1: "bouton" };
+// Le bouton est masculin, les fleurs féminines : la forme avec article évite « une bouton ».
+export const QUALITY_ARTICLED: Record<number, string> = { 3: "une fleur épanouie", 2: "une fleur", 1: "un bouton" };
 
-// Robot : délai de réflexion et taux de réussite par niveau.
+// Robot. Le temps de réflexion affiché reste court : personne n'a envie de
+// regarder un écran vide. Le niveau se joue donc sur deux autres leviers,
+// la justesse et la qualité de la fleur obtenue, tirée dans `quality`.
 export const BOT = {
-  1: { name: "Robot Tortue", delay: [30_000, 60_000], accuracy: 0.5 },
-  2: { name: "Robot Lièvre", delay: [15_000, 40_000], accuracy: 0.75 },
-  3: { name: "Robot Fusée", delay: [5_000, 18_000], accuracy: 0.92 },
+  1: { name: "Robot Tortue", think: [2200, 4500], accuracy: 0.55, quality: [1, 1, 1, 2, 2, 3] },
+  2: { name: "Robot Lièvre", think: [1800, 3800], accuracy: 0.78, quality: [1, 2, 2, 2, 3, 3] },
+  3: { name: "Robot Fusée", think: [1200, 2800], accuracy: 0.93, quality: [2, 3, 3, 3, 3] },
 } as const;
 export type BotLevel = keyof typeof BOT;
+
+export function botDraw(level: BotLevel) {
+  const b = BOT[level];
+  const think = b.think[0] + Math.floor(Math.random() * (b.think[1] - b.think[0]));
+  const correct = Math.random() < b.accuracy;
+  const quality = b.quality[Math.floor(Math.random() * b.quality.length)] as 1 | 2 | 3;
+  return { think, correct, quality };
+}
 
 export type Game = {
   code: string;
@@ -31,7 +43,7 @@ export type Game = {
   p2_flowers: number[];
   turn_seat: 1 | 2;
   round: number;
-  question_public: { notion: string; lesson: number; text: string; kind: "number" | "choice"; choices?: string[] } | null;
+  question_public: { notion: string; lesson: number; text: string; data?: string; kind: "number" | "choice"; choices?: string[] } | null;
   bot_due_at: string | null;
   bot_delay_ms: number | null;
   last_event: string | null;
