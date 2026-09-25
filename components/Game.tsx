@@ -179,7 +179,7 @@ export function Game({ code }: { code: string }) {
     <main className="sheet">
       <header className="masthead">
         <span className="wordmark">Fonction fleurs</span>
-        <span className="meta">partie {code}, manche {game.round}</span>
+        <span className="meta">manche {game.round}</span>
       </header>
 
       <Bouquet name={game.p1_name ?? "Joueur 1"} flowers={game.p1_flowers} size={game.bouquet_size}

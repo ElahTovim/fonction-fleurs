@@ -59,6 +59,7 @@ img { display: block; }
 }
 
 .masthead { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+.wordmark, .meta { white-space: nowrap; }
 .wordmark { color: var(--ink-2); }
 .meta { color: var(--ink-3); letter-spacing: 0.14em; }
 
