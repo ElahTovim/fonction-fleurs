@@ -32,9 +32,11 @@ export default function Home() {
   return (
     <main className="sheet">
       <header className="masthead">
-        <span className="masthead__title">Fonction fleurs</span>
-        <span className="masthead__meta">les maths de l&apos;IA</span>
+        <span className="wordmark">Fonction fleurs</span>
+        <span className="meta">les maths de l&apos;IA</span>
       </header>
+
+      <img className="accueil" src="/fleurs/accueil.webp" alt="" width={1000} height={672} fetchPriority="high" />
 
       <h1 className="display">Une équation juste,<br />une fleur de plus.</h1>
       <p className="lede">
@@ -42,18 +44,18 @@ export default function Home() {
         plus la fleur est belle. Le premier bouquet de cinq fleurs gagne.
       </p>
 
-      <div className="legend">
-        {/* Même espèce aux trois étages : ce qui change, c'est l'ouverture. */}
+      {/* La même espèce aux trois étages : ce qui change, c'est l'ouverture. */}
+      <div className="legende">
         <figure>
-          <Flower quality={3} index={0} size={54} />
-          <figcaption>moins de <span className="num">20</span> s</figcaption>
+          <Flower palette="a" index={0} quality={3} size={62} />
+          <figcaption>moins de 20 s</figcaption>
         </figure>
         <figure>
-          <Flower quality={2} index={0} size={54} />
-          <figcaption>moins de <span className="num">45</span> s</figcaption>
+          <Flower palette="a" index={0} quality={2} size={62} />
+          <figcaption>moins de 45 s</figcaption>
         </figure>
         <figure>
-          <Flower quality={1} index={0} size={54} />
+          <Flower palette="a" index={0} quality={1} size={62} />
           <figcaption>au delà</figcaption>
         </figure>
       </div>
@@ -74,13 +76,13 @@ export default function Home() {
       </div>
 
       <button className="btn" disabled={!!busy} onClick={() => create("duo")}>
-        {busy === "duo" ? "Création de la partie" : "Défier quelqu'un"}
+        {busy === "duo" ? "Création" : "Défier quelqu'un"}
       </button>
-      <p className="source" style={{ marginTop: -8 }}>
+      <p className="source" style={{ marginTop: -18 }}>
         Vous recevrez un lien à envoyer. Aucun compte à créer, ni pour vous ni pour l&apos;autre joueur.
       </p>
 
-      <div className="field" style={{ marginTop: 4 }}>
+      <div className="field">
         <span className="field__label">Ou jouer seul, contre la machine</span>
         <div className="segments" role="group" aria-label="Niveau du robot">
           {([1, 2, 3] as const).map((l) => (
@@ -91,7 +93,7 @@ export default function Home() {
         </div>
       </div>
       <button className="btn btn--quiet" disabled={!!busy} onClick={() => create("solo")}>
-        {busy === "solo" ? "Création de la partie" : `Affronter le ${BOT[level].name.replace("Robot ", "robot ")}`}
+        {busy === "solo" ? "Création" : `Affronter le ${BOT[level].name.replace("Robot ", "robot ")}`}
       </button>
     </main>
   );
