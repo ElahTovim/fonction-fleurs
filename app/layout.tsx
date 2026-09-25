@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { EB_Garamond } from "next/font/google";
 import "./globals.css";
+import { Intro } from "@/components/Intro";
 
 const garamond = EB_Garamond({
   variable: "--font-garamond",
@@ -25,7 +26,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={garamond.variable}>
-      <body>{children}</body>
+      <body>
+        <Intro />
+        {children}
+      </body>
     </html>
   );
 }

@@ -190,7 +190,13 @@ img { display: block; }
 .legende figure { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .legende figcaption { font-size: 13px; color: var(--ink-3); }
 
-.accueil { width: 100%; height: auto; }
+/* Accueil : un seul écran, l'espace libre va dans les respirations. */
+.sheet--compact { gap: 0; justify-content: flex-start; padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
+.sheet--compact .masthead { margin-bottom: auto; }
+.accroche { display: flex; flex-direction: column; gap: 14px; margin: 26px 0 auto; }
+.sheet--compact .field { margin-bottom: 20px; }
+.sheet--compact > .btn { margin-bottom: auto; }
+.solo { display: flex; flex-direction: column; gap: 12px; margin-top: 26px; }
 
 .attente { display: flex; align-items: center; gap: 10px; color: var(--ink-2); font-style: italic; }
 .attente::before {
@@ -219,6 +225,17 @@ img { display: block; }
 .fin__nom { font-size: clamp(1.9rem, 8.5vw, 2.5rem); font-weight: 500; letter-spacing: -0.02em; line-height: 1.05; }
 .fin__quoi { font-size: 16px; color: var(--ink-2); font-style: italic; }
 .fin__texte .btn { max-width: 340px; }
+
+/* Plan d'ouverture : il couvre la page le temps que les fleurs se rassemblent. */
+.intro {
+  position: fixed; inset: 0; z-index: 50;
+  background: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: opacity 500ms var(--ease-out);
+}
+.intro--sort { opacity: 0; pointer-events: none; }
+.intro__video { width: 100%; height: 100%; object-fit: contain; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
