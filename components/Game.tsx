@@ -157,9 +157,11 @@ export function Game({ code }: { code: string }) {
           <p className="fin__quoi">
             {game.winner_seat === 0
               ? "Deux bouquets d'égale beauté."
-              : gagne
-                ? "Votre bouquet est complet."
-                : "a terminé son bouquet avant vous."}
+              : seat === 0
+                ? "a terminé son bouquet."
+                : gagne
+                  ? "Votre bouquet est complet."
+                  : "a terminé son bouquet avant vous."}
           </p>
           <a className="btn" href="/" style={{ textDecoration: "none", textAlign: "center" }}>Nouvelle partie</a>
         </div>
