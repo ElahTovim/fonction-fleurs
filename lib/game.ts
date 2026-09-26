@@ -16,10 +16,14 @@ export const QUALITY_ARTICLED: Record<number, string> = { 3: "une fleur épanoui
 // Robot. Le temps de réflexion affiché reste court : personne n'a envie de
 // regarder un écran vide. Le niveau se joue donc sur deux autres leviers,
 // la justesse et la qualité de la fleur obtenue, tirée dans `quality`.
+// Réglé par simulation (outils/robot.py) : contre un joueur moyen, le Lièvre
+// doit perdre un peu plus souvent qu'il ne gagne, sinon il n'y a pas de jeu.
+// Le temps de réflexion varie largement pour qu'il ne réponde pas toujours
+// du tac au tac, tout en restant court : personne n'aime attendre un écran.
 export const BOT = {
-  1: { name: "Robot Tortue", think: [2200, 4500], accuracy: 0.55, quality: [1, 1, 1, 2, 2, 3] },
-  2: { name: "Robot Lièvre", think: [1800, 3800], accuracy: 0.78, quality: [1, 2, 2, 2, 3, 3] },
-  3: { name: "Robot Fusée", think: [1200, 2800], accuracy: 0.93, quality: [2, 3, 3, 3, 3] },
+  1: { name: "Robot Tortue", think: [2500, 9000], accuracy: 0.45, quality: [1, 1, 1, 1, 2, 2, 3] },
+  2: { name: "Robot Lièvre", think: [2000, 7000], accuracy: 0.64, quality: [1, 1, 2, 2, 2, 3] },
+  3: { name: "Robot Fusée", think: [1500, 5000], accuracy: 0.82, quality: [1, 2, 2, 3, 3, 3] },
 } as const;
 export type BotLevel = keyof typeof BOT;
 

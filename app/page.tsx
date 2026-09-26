@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getName, getToken, setName as saveName } from "@/lib/identity";
 import { BOT } from "@/lib/game";
+import { Flower } from "@/components/Flower";
 
 export default function Home() {
   const router = useRouter();
@@ -28,21 +30,18 @@ export default function Home() {
     router.push(`/p/${data.code}`);
   }
 
-  // Tout tient sur un écran : le plan d'ouverture a déjà montré les fleurs,
-  // cette page ne sert plus qu'à entrer son prénom et partir.
+  // Un seul écran, sans titre : le plan d'ouverture a déjà tout dit.
+  // Une fleur, un prénom, deux façons de partir, et les bases en bas.
   return (
-    <main className="sheet sheet--compact">
+    <main className="sheet sheet--accueil">
       <header className="masthead">
         <span className="wordmark">Fonction fleurs</span>
         <span className="meta">les maths de l&apos;IA</span>
       </header>
 
-      <div className="accroche">
-        <h1 className="display">Une équation juste,<br />une fleur de plus.</h1>
-        <p className="lede">
-          Chacun son tour. Plus la réponse arrive vite, plus la fleur est belle.
-          Le premier bouquet de cinq gagne.
-        </p>
+      <div className="accueil__fleur">
+        <Flower palette="a" index={0} quality={3} size={118} grande />
+        <p className="source">Une question, une fleur. Premier bouquet de cinq.</p>
       </div>
 
       <div className="field">
@@ -66,7 +65,6 @@ export default function Home() {
       </button>
 
       <div className="solo">
-        <span className="field__label">Ou seul, contre la machine</span>
         <div className="segments" role="group" aria-label="Niveau du robot">
           {([1, 2, 3] as const).map((l) => (
             <button key={l} className="segment" aria-pressed={level === l} onClick={() => setLevel(l)}>
@@ -75,9 +73,11 @@ export default function Home() {
           ))}
         </div>
         <button className="btn btn--quiet" disabled={!!busy} onClick={() => create("solo")}>
-          {busy === "solo" ? "Création" : "Jouer contre le robot"}
+          {busy === "solo" ? "Création" : "Jouer seul"}
         </button>
       </div>
+
+      <Link className="lien-bas" href="/bases">Les bases</Link>
     </main>
   );
 }

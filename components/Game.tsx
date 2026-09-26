@@ -5,11 +5,12 @@ import { getName, getToken, setName as saveName } from "@/lib/identity";
 import { type Game as G, QUALITY_ARTICLED, QUALITY_LABEL, SPEED_TIERS_MS } from "@/lib/game";
 import { assetsOf, paletteOf, videoSrc } from "@/lib/fleurs";
 import type { PublicQuestion } from "@/lib/questions";
+import Link from "next/link";
 import { Bouquet } from "./Bouquet";
 import { Flower } from "./Flower";
 
 type Turn = { turnId: string; question: PublicQuestion; startedAt: number };
-type Result = { correct: boolean; elapsedMs: number; quality: number; answer: string; explain: string; choices?: string[] };
+type Result = { correct: boolean; elapsedMs: number; quality: number; answer: string; explain: string; choices?: string[]; lecon: number; notion: string };
 
 const post = async (url: string, body: unknown) => {
   const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -97,7 +98,7 @@ export function Game({ code }: { code: string }) {
     const { ok, data } = await post(`/api/games/${code}/answer`, { token: token.current, turnId: turn.turnId, answer: value });
     setBusy(false);
     if (!ok) { setError(data.error); setTurn(null); return; }
-    setResult(data);
+    setResult({ ...data, lecon: turn.question.lesson, notion: turn.question.notion });
     setTurn(null);
     setGame(data.game);
   }
@@ -247,6 +248,11 @@ export function Game({ code }: { code: string }) {
             </>
           )}
           <p className="verdict__why">{result.explain}</p>
+          {!result.correct && (
+            <Link className="reviser" href={`/bases/${result.lecon}`}>
+              Relire « {result.notion} »
+            </Link>
+          )}
           <button className="btn btn--quiet" onClick={() => (myTurn ? ready() : setResult(null))}>
             {myTurn ? "Question suivante" : "Continuer"}
           </button>
