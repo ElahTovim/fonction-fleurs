@@ -1,3 +1,5 @@
+import { SENS } from "./sens";
+
 // Générateur de questions sur les dix notions du cours.
 // Chaque question est tirée au sort avec des nombres aléatoires :
 // deux joueurs ne voient jamais le même énoncé.
@@ -208,10 +210,20 @@ const GENERATEURS: Array<() => Question> = [
       explain: `Les valeurs se regroupent autour de ${centers.join(", ")} : ${k} clusters.`,
     };
   },
+  // Les dix questions de sens : une par notion, sans un seul calcul.
+  // Elles vérifient ce que la notion devient dans un modèle, qui est la
+  // seule chose que le séminaire cherche à transmettre.
+  ...SENS.map((s) => () =>
+    mcq(
+      { notion: s.notion, lesson: s.lesson, text: s.text, explain: s.explain },
+      pick(s.bonnes),
+      shuffle(s.leurres).slice(0, 3)
+    )
+  ),
 ];
 
 /** La leçon que chaque générateur interroge, dans l'ordre du tableau. */
-const LECON_DE = [1, 2, 3, 3, 4, 5, 6, 7, 7, 8, 9, 9, 10, 10];
+const LECON_DE = [1, 2, 3, 3, 4, 5, 6, 7, 7, 8, 9, 9, 10, 10, ...SENS.map((s) => s.lesson)];
 
 /** Le tirage n'est pas uniforme : si le joueur a déjà manqué des notions,
  *  elles reviennent deux fois sur trois. Le jeu cesse d'être un contrôle

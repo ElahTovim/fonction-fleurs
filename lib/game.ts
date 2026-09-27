@@ -10,6 +10,13 @@ export function qualityFor(elapsedMs: number): 1 | 2 | 3 {
   return 1;
 }
 export const QUALITY_LABEL: Record<number, string> = { 3: "fleur épanouie", 2: "fleur", 1: "bouton" };
+
+// Passé ce délai le tour est perdu et la main passe. Sans lui, un joueur qui
+// pose son téléphone gèle la partie pour toujours : c'était le cas de sept
+// parties sur dix.
+export const TURN_LIMIT_MS = 90_000;
+// Et sans coup joué d'un bout à l'autre, la partie se clôt d'elle-même.
+export const ABANDON_MS = 24 * 3_600_000;
 // Le bouton est masculin, les fleurs féminines : la forme avec article évite « une bouton ».
 export const QUALITY_ARTICLED: Record<number, string> = { 3: "une fleur épanouie", 2: "une fleur", 1: "un bouton" };
 

@@ -22,6 +22,6 @@ export async function POST(_req: Request, { params }: { params: Promise<{ code: 
   if (!closed?.length) return json({ game: await loadGame(code) });
 
   const lecon = (turn.question as { lesson: number }).lesson;
-  const game = await applyTurn(g, 2, correct, elapsed, lecon, quality);
+  const game = await applyTurn(g, 2, { correct, elapsedMs: elapsed, lecon, botQuality: quality });
   return json({ game });
 }

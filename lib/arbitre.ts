@@ -1,11 +1,24 @@
 // L'arbitre : la seule chose qui écrit dans la base. Tourne chez Vercel, jamais sur un téléphone.
 import { admin } from "./supabaseAdmin";
-import { type BotLevel, botDraw, type Fleur, type Game, QUALITY_ARTICLED, qualityFor, settleRound } from "./game";
+import { ABANDON_MS, type BotLevel, botDraw, type Fleur, type Game, QUALITY_ARTICLED, qualityFor, settleRound } from "./game";
 import { randomQuestion, toPublic } from "./questions";
 
 export async function loadGame(code: string): Promise<Game | null> {
   const { data } = await admin().from("games").select("*").eq("code", code).maybeSingle();
-  return (data as Game) ?? null;
+  const g = (data as Game) ?? null;
+  if (!g || g.status === "finished") return g;
+  // Une partie que plus personne ne touche finit par se clore d'elle-même.
+  // On le constate à la lecture plutôt qu'avec une tâche planifiée : il n'y a
+  // rien à surveiller, et la partie est de toute façon relue avant chaque coup.
+  if (Date.now() - new Date(g.updated_at).getTime() < ABANDON_MS) return g;
+  return updateGame(code, {
+    status: "finished",
+    winner_seat: null,
+    question_public: null,
+    bot_due_at: null,
+    bot_delay_ms: null,
+    last_event: "Personne n'a joué pendant 24 heures : la partie s'est close.",
+  });
 }
 
 export async function seatOf(code: string, token: string): Promise<{ seat: 1 | 2; name: string } | null> {
@@ -34,7 +47,18 @@ export async function startBotTurn(g: Game): Promise<Partial<Game>> {
 // Applique le résultat d'un tour et fait avancer la partie.
 // `botQuality` n'est passé que pour le robot : sa fleur vient de son niveau,
 // pas de son temps de réflexion, qui n'est qu'une courte pause d'affichage.
-export async function applyTurn(g: Game, seat: 1 | 2, correct: boolean, elapsedMs: number, lecon: number, botQuality?: 1 | 2 | 3): Promise<Game> {
+export type Issue = {
+  correct: boolean;
+  elapsedMs: number;
+  lecon: number;
+  /** Le robot tire sa fleur de son niveau, pas de son temps de réflexion. */
+  botQuality?: 1 | 2 | 3;
+  /** Tour fermé par le chrono, personne n'a répondu. */
+  expire?: boolean;
+};
+
+export async function applyTurn(g: Game, seat: 1 | 2, issue: Issue): Promise<Game> {
+  const { correct, elapsedMs, lecon, botQuality, expire } = issue;
   const name = seat === 1 ? g.p1_name : g.p2_name;
   const quality = correct ? (botQuality ?? qualityFor(elapsedMs)) : 0;
   const secs = Math.round(elapsedMs / 1000);
@@ -43,7 +67,9 @@ export async function applyTurn(g: Game, seat: 1 | 2, correct: boolean, elapsedM
       ? botQuality
         ? `${name} a répondu juste : ${QUALITY_ARTICLED[quality]}.`
         : `${name} a répondu juste en ${secs} s : ${QUALITY_ARTICLED[quality]}.`
-      : `${name} s'est trompé. Pas de fleur.`,
+      : expire
+        ? `Temps écoulé pour ${name}. Pas de fleur.`
+        : `${name} s'est trompé. Pas de fleur.`,
     question_public: null,
     bot_due_at: null,
     bot_delay_ms: null,

@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { getName, getToken, setLastGame, setName as saveName } from "@/lib/identity";
-import { fleur, type Game as G, QUALITY_LABEL, SPEED_TIERS_MS } from "@/lib/game";
+import { fleur, type Game as G } from "@/lib/game";
 import { assetsOf, paletteOf, videoSrc } from "@/lib/fleurs";
 import { lecon } from "@/lib/lecons";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ import type { PublicQuestion } from "@/lib/questions";
 import Link from "next/link";
 import { Nav } from "./Nav";
 import { Bouquet } from "./Bouquet";
+import { Jauge } from "./Jauge";
 import { Flower } from "./Flower";
 
 type Turn = { turnId: string; question: PublicQuestion; startedAt: number };
@@ -86,6 +87,33 @@ export function Game({ code }: { code: string }) {
 
   useEffect(() => { if (game && game.turn_seat !== seat) setTurn(null); }, [game, seat]);
 
+  // 3 bis. Le chrono du tour, arbitré par le serveur.
+  //   N'importe quel écran ouvert peut réclamer la fermeture d'un tour expiré,
+  //   y compris celui de l'adversaire ou d'un spectateur. C'est ce qui débloque
+  //   la partie quand un joueur a simplement posé son téléphone.
+  // Les faits stables du tour en cours : l'effet ne doit pas repartir à chaque
+  // sondage, sinon le rendez-vous calculé par le serveur ne sert à rien.
+  const tourOuvert = game?.status === "playing" && !!game?.question_public;
+  const manche = game?.round ?? 0;
+  const quiJoue = game?.turn_seat ?? 0;
+  useEffect(() => {
+    if (!tourOuvert) return;
+    let vivant = true;
+    let t: ReturnType<typeof setTimeout>;
+    const frapper = async () => {
+      const { ok, data } = await post(`/api/games/${code}/timeout`, {});
+      if (!vivant) return;
+      if (ok && data.game) setGame(data.game);
+      if (ok && data.expire) { setTurn(null); setResult(null); }
+      // Le serveur dit combien de temps il reste : on revient juste après,
+      // avec un peu de hasard pour que les deux écrans ne frappent pas ensemble.
+      const dans = ok && typeof data.msLeft === "number" ? data.msLeft + 400 + Math.random() * 900 : 20_000;
+      t = setTimeout(frapper, Math.max(1500, dans));
+    };
+    t = setTimeout(frapper, 1500);
+    return () => { vivant = false; clearTimeout(t); };
+  }, [tourOuvert, manche, quiJoue, code]);
+
   // 4. Les corolles de ma palette sont chargées d'avance : une fleur gagnée
   //    ne doit jamais apparaître en deux temps.
   useEffect(() => {
@@ -101,7 +129,9 @@ export function Game({ code }: { code: string }) {
     const { ok, data } = await post(`/api/games/${code}/question`, { token: token.current });
     setBusy(false);
     if (!ok) { setError(data.error); return; }
-    setTurn({ turnId: data.turnId, question: data.question, startedAt: Date.now() });
+    // Départ recalé sur le serveur : une page rouverte en cours de tour
+    // retrouve le temps réellement écoulé, pas zéro.
+    setTurn({ turnId: data.turnId, question: data.question, startedAt: Date.now() - (data.elapsedMs ?? 0) });
   }
 
   async function answer(value: string) {
@@ -136,6 +166,7 @@ export function Game({ code }: { code: string }) {
         <button className="btn" disabled={!draft.trim()} onClick={() => { saveName(draft.trim()); setName(draft.trim()); join(draft.trim()); }}>
           Rejoindre la partie
         </button>
+        <Link className="reprendre" href="/regles">Règles du jeu</Link>
         {error && <p className="source" style={{ color: "var(--clay)" }} role="alert">{error}</p>}
       </main>
     );
@@ -151,6 +182,20 @@ export function Game({ code }: { code: string }) {
     );
   }
   if (!game || seat === null) return <main className="sheet"><p className="attente">Connexion à la partie</p></main>;
+
+  // Partie close faute de joueurs : ni victoire ni défaite, donc pas de plan.
+  if (game.status === "finished" && game.winner_seat === null) {
+    return (
+      <main className="sheet">
+        <Nav droite={`partie ${code}`} />
+        <h1 className="display">Partie close.</h1>
+        <p className="lede">{game.last_event}</p>
+        <Link className="btn" href="/" style={{ textDecoration: "none", textAlign: "center" }}>
+          Nouvelle partie
+        </Link>
+      </main>
+    );
+  }
 
   // Fin de partie : le plan, puis la carte de ce qu'on a récolté.
   if (game.status === "finished") {
@@ -224,8 +269,6 @@ export function Game({ code }: { code: string }) {
   const myTurn = game.turn_seat === seat && game.status === "playing";
   const opponent = seat === 1 ? game.p2_name : game.p1_name;
   const elapsedMs = turn ? Math.max(0, Date.now() - turn.startedAt) : 0;
-  const secs = Math.floor(elapsedMs / 1000);
-  const tier = elapsedMs <= SPEED_TIERS_MS.epanouie ? 3 : elapsedMs <= SPEED_TIERS_MS.fleur ? 2 : 1;
   const maPalette = paletteOf(seat === 0 ? 1 : seat);
 
   return (
@@ -237,6 +280,9 @@ export function Game({ code }: { code: string }) {
       <Bouquet name={game.p2_name ?? "En attente"} flowers={game.p2_flowers} size={game.bouquet_size}
         active={game.turn_seat === 2} mine={seat === 2} palette={paletteOf(2)} />
 
+      {/* Le récit de la partie se lit sous les bouquets, pas après le pli. */}
+      {game.last_event && <p className="log" aria-live="polite">{game.last_event}</p>}
+
       {game.status === "lobby" && (
         <section className="panel">
           {seat === 1 ? (
@@ -244,6 +290,7 @@ export function Game({ code }: { code: string }) {
               <h2 className="question">Envoyez ce lien.</h2>
               <p className="share">{typeof window !== "undefined" ? window.location.href : ""}</p>
               <button className="btn" onClick={share}>{copied ? "Lien copié" : "Partager le lien"}</button>
+              <Link className="reprendre" href="/regles">Règles du jeu</Link>
             </>
           ) : (
             <p className="attente">La partie va commencer</p>
@@ -312,19 +359,14 @@ export function Game({ code }: { code: string }) {
 
       {myTurn && turn && (
         <section className="panel">
-          <div className="qhead">
-            <p className="kicker">{turn.question.notion}</p>
-            <p className="chrono">
-              <span className="chrono__n">{secs}</span>
-              <span className="chrono__mot">{QUALITY_LABEL[tier]}</span>
-            </p>
-          </div>
+          <Jauge elapsedMs={elapsedMs} palette={maPalette} lecon={turn.question.lesson} />
 
+          <p className="kicker">{turn.question.notion}</p>
           <p className="question">{turn.question.text}</p>
           {turn.question.data && <p className="data">{turn.question.data}</p>}
 
           {turn.question.kind === "choice" ? (
-            <div className="choices">
+            <div className={`choices ${turn.question.choices!.some((c) => c.length > 22) ? "choices--longues" : ""}`}>
               {turn.question.choices!.map((c, i) => (
                 <button key={i} className="choice" disabled={busy} onClick={() => answer(String(i))}>{c}</button>
               ))}
@@ -349,7 +391,6 @@ export function Game({ code }: { code: string }) {
         </section>
       )}
 
-      {game.last_event && <p className="log">{game.last_event}</p>}
       {error && <p className="source" style={{ color: "var(--clay)" }} role="alert">{error}</p>}
     </main>
   );

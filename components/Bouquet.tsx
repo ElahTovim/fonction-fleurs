@@ -29,10 +29,15 @@ export function Bouquet({ name, flowers, size, active, mine, palette }: Props) {
     vues.current = flowers.length;
   }, [flowers.length]);
 
+  // Celui qui n'a pas la main occupe moins de place, il ne s'efface pas :
+  // son score reste un texte pleinement lisible.
+  const corolle = active ? 58 : 44;
+
   return (
     <section className={`joueur ${active ? "joueur--actif" : ""}`} aria-label={`Bouquet de ${name}`}>
       <div className="joueur__ligne">
         <h2 className="joueur__nom">
+          <span className="joueur__marque" aria-hidden="true" />
           {name}
           {mine && <em>vous</em>}
         </h2>
@@ -50,7 +55,7 @@ export function Bouquet({ name, flowers, size, active, mine, palette }: Props) {
                 palette={palette}
                 lecon={f?.l ?? 0}
                 quality={(f?.q ?? 0) as 0 | 1 | 2 | 3}
-                size={58}
+                size={corolle}
                 entrante={i === entrante}
               />
             </li>

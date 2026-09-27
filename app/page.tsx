@@ -80,6 +80,7 @@ export default function Home() {
       )}
 
       <Link className="btn btn--bases" href="/bases">Les bases</Link>
+      <Link className="reprendre" href="/regles">Règles du jeu</Link>
     </main>
   );
 }

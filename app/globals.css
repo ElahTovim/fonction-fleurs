@@ -10,6 +10,9 @@
   --ink-2: #5d554c;
   --ink-3: #6e6455;
   --rule: #e4dcc8;
+  /* Les traits qui PORTENT une information (place libre, piste du chrono)
+     ne peuvent pas descendre sous 3:1 : ce jeton vaut 3,53. */
+  --trait: #8d7e60;
   --aubergine: #4a2540;
   --clay: #8c3b28;
 
@@ -115,19 +118,32 @@ img { display: block; }
 .segment:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 /* Un joueur et son bouquet. Ni carte, ni filet : l'espace suffit. */
-.joueur { display: flex; flex-direction: column; gap: 10px; opacity: 0.55; transition: opacity 260ms var(--ease-out); }
-.joueur--actif { opacity: 1; }
+/* Celui qui n'a pas la main tient moins de place. On ne baisse PAS son
+   opacité : son nom et son score sont des informations, pas du décor, et
+   sous 4,5:1 ils cessent d'être lisibles. */
+.joueur { display: flex; flex-direction: column; gap: 10px; }
 .joueur__ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.joueur__nom { font-size: 19px; font-weight: 500; }
+.joueur__nom { display: flex; align-items: baseline; font-size: 17px; font-weight: 500; transition: font-size 260ms var(--ease-out); }
+.joueur--actif .joueur__nom { font-size: 21px; }
 .joueur__nom em { font-style: normal; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); margin-left: 9px; font-weight: 500; }
 .joueur__compte { font-size: 14px; color: var(--ink-3); }
 .joueur__beaute { margin-left: 12px; }
 
-.rangee { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+/* Le tour se marque par une pastille pleine, jamais par l'effacement de
+   l'autre. La place est réservée dans les deux cas, rien ne saute. */
+.joueur__marque {
+  width: 7px; height: 7px; flex: none; border-radius: 50%;
+  margin-right: 10px; background: none;
+  transition: background-color 260ms var(--ease-out);
+}
+.joueur--actif .joueur__marque { background: var(--ink); }
+
+.rangee { list-style: none; display: flex; align-items: center; gap: 9px; }
 .rangee li { display: flex; min-width: 0; flex: 0 1 auto; }
 
 .fleur { max-width: 100%; height: auto; }
-.fleur--vide { display: block; border: 1px solid var(--rule); border-radius: 50%; }
+/* Une place libre est un composant, pas un ornement : 3:1 minimum. */
+.fleur--vide { display: block; border: 1px solid var(--trait); border-radius: 50%; transition: width 260ms var(--ease-out), height 260ms var(--ease-out); }
 
 /* La fleur gagnée se pose, elle n'explose pas. */
 @keyframes poser { from { opacity: 0; transform: translateY(8px) scale(0.94); } to { opacity: 1; transform: none; } }
@@ -151,20 +167,63 @@ img { display: block; }
 }
 
 .qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
-.chrono { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex: none; }
-.chrono__n { font-size: 26px; font-weight: 500; color: var(--aubergine); line-height: 1; }
-.chrono__mot { font-size: 13px; color: var(--ink-3); white-space: nowrap; }
+
+/* La jauge de temps.
+   Le chrono chiffré demandait de savoir que 20 s et 45 s changent quelque
+   chose. La barre le montre : elle se vide, deux encoches marquent les deux
+   seuils, et la corolle affichée à côté se referme en les franchissant.
+   Elle colle en haut de l'écran, seul endroit que le clavier ne couvre pas. */
+.jauge {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--paper);
+  padding: 14px 0 6px;
+  margin: -14px 0 0;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.jauge__barre { position: relative; padding-bottom: 7px; }
+.jauge__piste {
+  height: 10px; border-radius: 999px;
+  background: none; border: 1px solid var(--trait);
+  overflow: hidden;
+}
+.jauge__reste {
+  height: 100%; background: var(--ink);
+  transition: width 260ms linear;
+}
+/* Les seuils sont des encoches, pas des couleurs : la palette du jeu
+   appartient aux fleurs. */
+.jauge__encoche { position: absolute; bottom: 0; width: 1px; height: 5px; background: var(--trait); }
+.jauge__etat { display: flex; align-items: center; gap: 10px; }
+.jauge__stade { font-size: 13px; color: var(--ink-2); }
+.jauge__secondes {
+  margin-left: auto;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: 15px; color: var(--ink-2);
+  transition: color 200ms var(--ease-out), font-size 200ms var(--ease-out);
+}
+.jauge__secondes--court { font-size: 19px; font-weight: 500; color: var(--clay); }
+
+@media (prefers-reduced-motion: reduce) {
+  .jauge__reste, .joueur__nom, .fleur--vide, .joueur__marque { transition: none; }
+}
 
 .answer { display: flex; gap: 12px; align-items: flex-end; }
 .answer .input { flex: 1; min-width: 0; }
+/* Le pavé numérique des téléphones n'a pas de signe moins. Ce bouton doit
+   donc se lire comme un bouton, et non comme la suite du champ. */
 .sign {
-  flex: none; width: 52px; padding: 9px 0;
-  border: none; border-bottom: 1px solid var(--ink); background: none;
-  font-size: 20px; cursor: pointer;
+  flex: none; width: 56px; padding: 13px 0;
+  border: 1px solid var(--ink); background: none;
+  font-size: 20px; line-height: 1; cursor: pointer;
 }
+.sign:active { background: var(--ink); color: var(--paper); }
 .sign:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* Les questions de sens proposent des phrases, pas des nombres : sur deux
+   colonnes elles deviennent illisibles. */
+.choices--longues { grid-template-columns: 1fr; }
+.choices--longues .choice { text-align: left; padding: 15px 16px; font-size: 16px; line-height: 1.35; }
 .choice {
   padding: 17px 8px;
   border: 1px solid var(--rule);
@@ -213,6 +272,17 @@ img { display: block; }
 
 /* Le nom de l'application est cliquable : il ramène toujours à l'accueil. */
 a.wordmark { margin: -14px -10px -14px -10px; padding: 14px 10px; }
+
+/* Les règles : cinq points, rien de plus. Un joueur qui reçoit le lien ne
+   doit pas apprendre le jeu en le perdant. */
+.regles { list-style: none; display: flex; flex-direction: column; gap: 32px; }
+.regles li { display: flex; flex-direction: column; gap: 9px; }
+.regles h2 { font-size: 20px; font-weight: 500; }
+.regles p { font-size: 16px; color: var(--ink-2); }
+.regles__stades { display: flex; justify-content: space-between; gap: 12px; margin: 4px 0 2px; }
+.regles__stades figure { display: flex; flex-direction: column; align-items: center; gap: 9px; text-align: center; }
+.regles__stades figcaption { font-size: 13px; color: var(--ink-2); display: flex; flex-direction: column; gap: 2px; }
+.regles__stades figcaption span { font-size: 12px; color: var(--ink-3); }
 
 /* Une partie laissée en route se retrouve depuis l'accueil. */
 .reprendre {

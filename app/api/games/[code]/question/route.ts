@@ -2,6 +2,8 @@ import { admin } from "@/lib/supabaseAdmin";
 import { json, loadGame, seatOf, updateGame } from "@/lib/arbitre";
 import { randomQuestion, toPublic, type Question } from "@/lib/questions";
 
+const since = (iso: string) => Math.max(0, Date.now() - new Date(iso).getTime());
+
 // Le joueur dit « Prêt » : l'arbitre révèle la question et démarre le chrono.
 export async function POST(req: Request, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
@@ -16,7 +18,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ code: s
   // Un tour déjà ouvert pour ce joueur dans cette manche ? On le rend tel quel (le chrono continue).
   const { data: open } = await db.from("turns").select("id,question,revealed_at")
     .eq("game_code", code).eq("seat", me.seat).eq("round", g.round).is("answered_at", null).maybeSingle();
-  if (open) return json({ turnId: open.id, question: toPublic(open.question as Question), revealedAt: open.revealed_at });
+  // `elapsedMs` plutôt que l'heure de départ : la page recale son chrono sur
+  // le serveur sans dépendre de l'heure du téléphone, et une page rouverte
+  // en cours de tour retrouve le bon temps restant.
+  if (open) return json({ turnId: open.id, question: toPublic(open.question as Question), elapsedMs: since(open.revealed_at) });
 
   // Les notions que ce joueur a déjà manquées dans cette partie reviendront
   // plus souvent : le jeu s'ajuste à ce qui lui résiste.
@@ -31,5 +36,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ code: s
   const { data: turn, error } = await db.from("turns").insert({ game_code: code, seat: me.seat, round: g.round, question: q }).select("id,revealed_at").single();
   if (error) return json({ error: error.message }, 500);
   await updateGame(code, { question_public: toPublic(q) });
-  return json({ turnId: turn.id, question: toPublic(q), revealedAt: turn.revealed_at });
+  return json({ turnId: turn.id, question: toPublic(q), elapsedMs: since(turn.revealed_at) });
 }
