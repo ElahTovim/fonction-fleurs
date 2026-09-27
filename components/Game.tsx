@@ -1,13 +1,14 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { getName, getToken, setName as saveName } from "@/lib/identity";
+import { getName, getToken, setLastGame, setName as saveName } from "@/lib/identity";
 import { fleur, type Game as G, QUALITY_LABEL, SPEED_TIERS_MS } from "@/lib/game";
 import { assetsOf, paletteOf, videoSrc } from "@/lib/fleurs";
 import { lecon } from "@/lib/lecons";
 import { useRouter } from "next/navigation";
 import type { PublicQuestion } from "@/lib/questions";
 import Link from "next/link";
+import { Nav } from "./Nav";
 import { Bouquet } from "./Bouquet";
 import { Flower } from "./Flower";
 
@@ -50,6 +51,12 @@ export function Game({ code }: { code: string }) {
     setName(n);
     if (n) join(n);
   }, [join]);
+
+  // L'accueil doit pouvoir ramener ici tant que la partie court.
+  useEffect(() => {
+    if (!game) return;
+    setLastGame(game.status === "finished" ? null : code);
+  }, [game, code]);
 
   // 2. Mise à jour pour tous : Supabase pousse chaque changement de la partie.
   //    Le sondage de secours couvre le cas où la connexion temps réel tombe.
@@ -120,10 +127,7 @@ export function Game({ code }: { code: string }) {
   if (!name) {
     return (
       <main className="sheet">
-        <header className="masthead">
-          <span className="wordmark">Fonction fleurs</span>
-          <span className="meta">partie {code}</span>
-        </header>
+        <Nav droite={`partie ${code}`} />
         <h1 className="display">On vous a passé<br />le lien.</h1>
         <div className="field">
           <label className="field__label" htmlFor="name">Votre prénom pour rejoindre</label>
@@ -226,10 +230,7 @@ export function Game({ code }: { code: string }) {
 
   return (
     <main className="sheet">
-      <header className="masthead">
-        <span className="wordmark">Fonction fleurs</span>
-        <span className="meta">manche {game.round}</span>
-      </header>
+      <Nav droite={`manche ${game.round}`} />
 
       <Bouquet name={game.p1_name ?? "Joueur 1"} flowers={game.p1_flowers} size={game.bouquet_size}
         active={game.turn_seat === 1} mine={seat === 1} palette={paletteOf(1)} />
@@ -292,7 +293,7 @@ export function Game({ code }: { code: string }) {
           )}
           <p className="verdict__why">{result.explain}</p>
           {!result.correct && (
-            <Link className="reviser" href={`/bases/${result.lecon}`}>
+            <Link className="reviser" href={`/bases/${result.lecon}?p=${code}`}>
               Relire « {result.notion} »
             </Link>
           )}

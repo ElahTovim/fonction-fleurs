@@ -12,3 +12,11 @@ export function getToken(): string {
 }
 export function getName(): string { try { return localStorage.getItem(N) ?? ""; } catch { return ""; } }
 export function setName(n: string) { try { localStorage.setItem(N, n); } catch {} }
+
+// La dernière partie ouverte sur cet appareil. Sans elle, le lien « accueil »
+// serait un piège : on sort du jeu et on ne sait plus par où y revenir.
+const P = "fleurs.partie";
+export function setLastGame(code: string | null) {
+  try { code ? localStorage.setItem(P, code) : localStorage.removeItem(P); } catch {}
+}
+export function getLastGame(): string { try { return localStorage.getItem(P) ?? ""; } catch { return ""; } }

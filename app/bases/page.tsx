@@ -2,16 +2,14 @@ import Link from "next/link";
 import { LECONS } from "@/lib/lecons";
 import { FIL_ROUGE } from "@/lib/ia";
 import { Riche } from "@/components/Riche";
+import { Nav } from "@/components/Nav";
 
 export const metadata = { title: "Les bases · Fonction fleurs" };
 
 export default function Bases() {
   return (
     <main className="sheet">
-      <header className="masthead">
-        <Link className="wordmark lien" href="/">Retour</Link>
-        <span className="meta">les bases</span>
-      </header>
+      <Nav retour="/" libelle="Jouer" droite="les bases" />
 
       <p className="fil"><Riche texte={FIL_ROUGE} /></p>
 

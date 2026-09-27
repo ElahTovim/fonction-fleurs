@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { LECONS, lecon, type Bloc } from "@/lib/lecons";
 import { eclairage } from "@/lib/ia";
 import { Riche } from "@/components/Riche";
+import { Nav } from "@/components/Nav";
 
 export function generateStaticParams() {
   return LECONS.map((l) => ({ n: String(l.n) }));
@@ -25,8 +26,13 @@ function Morceau({ b }: { b: Bloc }) {
   return <p className="lecon__para"><Riche texte={b.c} /></p>;
 }
 
-export default async function Lecon({ params }: { params: Promise<{ n: string }> }) {
+export default async function Lecon({ params, searchParams }: {
+  params: Promise<{ n: string }>;
+  searchParams: Promise<{ p?: string }>;
+}) {
   const n = Number((await params).n);
+  // `p` porte le code de la partie en cours : on y revient au lieu de la perdre.
+  const partie = (await searchParams).p;
   const l = lecon(n);
   if (!l) notFound();
   const suivante = lecon(n + 1);
@@ -34,10 +40,11 @@ export default async function Lecon({ params }: { params: Promise<{ n: string }>
 
   return (
     <main className="sheet">
-      <header className="masthead">
-        <Link className="wordmark lien" href="/bases">Les bases</Link>
-        <span className="meta">leçon {l.n}</span>
-      </header>
+      <Nav
+        retour={partie ? `/p/${partie}` : "/bases"}
+        libelle={partie ? "Reprendre la partie" : "Les bases"}
+        droite={`leçon ${l.n}`}
+      />
 
       <h1 className="display lecon__nom">{l.titre}</h1>
       <p className="lede">{l.sous}</p>
@@ -58,8 +65,14 @@ export default async function Lecon({ params }: { params: Promise<{ n: string }>
       )}
 
       <nav className="lecon__pied">
-        {suivante && <Link className="btn btn--quiet" href={`/bases/${suivante.n}`}>Notion suivante</Link>}
-        <Link className="btn" href="/">Jouer</Link>
+        {suivante && (
+          <Link className="btn btn--quiet" href={`/bases/${suivante.n}${partie ? `?p=${partie}` : ""}`}>
+            Notion suivante
+          </Link>
+        )}
+        <Link className="btn" href={partie ? `/p/${partie}` : "/"}>
+          {partie ? "Reprendre la partie" : "Jouer"}
+        </Link>
       </nav>
     </main>
   );

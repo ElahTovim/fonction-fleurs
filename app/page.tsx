@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getName, getToken, setName as saveName } from "@/lib/identity";
+import { getLastGame, getName, getToken, setName as saveName } from "@/lib/identity";
 import { BOT } from "@/lib/game";
 import { Flower } from "@/components/Flower";
 
@@ -12,8 +12,9 @@ export default function Home() {
   const [level, setLevel] = useState<1 | 2 | 3>(2);
   const [busy, setBusy] = useState<"duo" | "solo" | null>(null);
   const [error, setError] = useState("");
+  const [encours, setEncours] = useState("");
 
-  useEffect(() => setName(getName()), []);
+  useEffect(() => { setName(getName()); setEncours(getLastGame()); }, []);
 
   async function create(mode: "duo" | "solo") {
     if (!name.trim()) { setError("Votre prénom d'abord."); return; }
@@ -73,6 +74,10 @@ export default function Home() {
           {busy === "solo" ? "Création" : "Jouer seul"}
         </button>
       </div>
+
+      {encours && (
+        <Link className="reprendre" href={`/p/${encours}`}>Reprendre la partie {encours}</Link>
+      )}
 
       <Link className="btn btn--bases" href="/bases">Les bases</Link>
     </main>

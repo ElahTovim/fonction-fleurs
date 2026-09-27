@@ -200,6 +200,31 @@ img { display: block; }
 
 .lien { text-decoration: none; }
 
+/* Le retour : une cible franche, pas un mot perdu dans un coin. */
+.retour {
+  display: inline-flex; align-items: center; gap: 7px;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  font-size: 11px; font-weight: 500;
+  color: var(--ink-2); text-decoration: none;
+  margin: -14px -10px -14px -10px; padding: 14px 10px;
+}
+.retour span { font-size: 15px; line-height: 1; }
+.retour:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* Le nom de l'application est cliquable : il ramène toujours à l'accueil. */
+a.wordmark { margin: -14px -10px -14px -10px; padding: 14px 10px; }
+
+/* Une partie laissée en route se retrouve depuis l'accueil. */
+.reprendre {
+  display: block; text-align: center;
+  margin-top: 22px; padding: 12px 8px;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  font-size: 11px; font-weight: 500;
+  color: var(--ink-2); text-decoration: none;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.reprendre:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
 /* « Les bases » : un vrai bouton, pas un lien qui se cache. */
 .btn--bases {
   margin-top: 34px;
