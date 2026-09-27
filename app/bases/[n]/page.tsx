@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LECONS, lecon, type Bloc } from "@/lib/lecons";
+import { eclairage } from "@/lib/ia";
+import { Riche } from "@/components/Riche";
 
 export function generateStaticParams() {
   return LECONS.map((l) => ({ n: String(l.n) }));
@@ -9,17 +11,6 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ n: string }> }) {
   const l = lecon(Number((await params).n));
   return { title: l ? `${l.titre} · Fonction fleurs` : "Fonction fleurs" };
-}
-
-/** Le gras du cours est noté **ainsi** : on le rend sans dépendance. */
-function Riche({ texte }: { texte: string }) {
-  return (
-    <>
-      {texte.split("**").map((part, i) =>
-        i % 2 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
-      )}
-    </>
-  );
 }
 
 function Morceau({ b }: { b: Bloc }) {
@@ -39,6 +30,7 @@ export default async function Lecon({ params }: { params: Promise<{ n: string }>
   const l = lecon(n);
   if (!l) notFound();
   const suivante = lecon(n + 1);
+  const ia = eclairage(n);
 
   return (
     <main className="sheet">
@@ -53,6 +45,17 @@ export default async function Lecon({ params }: { params: Promise<{ n: string }>
       <article className="lecon">
         {l.blocs.map((b, i) => <Morceau key={i} b={b} />)}
       </article>
+
+      {ia && (
+        <section className="seminaire">
+          <h2 className="seminaire__etiquette">En quoi c&apos;est de l&apos;IA</h2>
+          <p className="lecon__para">{ia.role}</p>
+
+          <h2 className="seminaire__etiquette">Cas concret</h2>
+          <p className="seminaire__cas">{ia.cas.titre}</p>
+          {ia.cas.texte.map((t, i) => <p key={i} className="lecon__para">{t}</p>)}
+        </section>
+      )}
 
       <nav className="lecon__pied">
         {suivante && <Link className="btn btn--quiet" href={`/bases/${suivante.n}`}>Notion suivante</Link>}

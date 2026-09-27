@@ -291,3 +291,22 @@ img { display: block; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Le fil rouge : la phrase qui contient les dix notions. */
+.fil { font-size: 18px; line-height: 1.55; }
+.fil strong { font-weight: 600; }
+
+/* La couche séminaire, après le cours : ce que la notion devient en IA. */
+.seminaire {
+  display: flex; flex-direction: column; gap: 14px;
+  border-top: 1px solid var(--ink);
+  padding-top: 22px;
+  margin-top: 8px;
+}
+.seminaire__etiquette {
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--aubergine); font-weight: 500;
+}
+.seminaire__etiquette + .seminaire__etiquette,
+.seminaire .lecon__para + .seminaire__etiquette { margin-top: 12px; }
+.seminaire__cas { font-size: 18px; font-style: italic; color: var(--ink); }
