@@ -1,37 +1,44 @@
-// Les fleurs du jeu ne sont plus dessinées, ce sont des planches brodées.
-// Chaque joueur reçoit une palette de deux espèces qui se répondent, et son
-// bouquet les alterne. Deux palettes suffisent donc à distinguer les joueurs.
+// Les fleurs du jeu sont des planches brodées. Chaque joueur reçoit une
+// palette de trois espèces composée comme un fleuriste compose : une fleur
+// dominante, une secondaire, une légère qui lie l'ensemble. L'espèce n'est
+// pas décorative, elle dit la famille de la notion gagnée.
+
+import { type Famille, familleDe } from "./notions";
 
 export type Palette = "a" | "b";
 
-export const PALETTES = {
-  a: { especes: ["gerbera", "allium"], nom: "gerbera et allium" },
-  b: { especes: ["souci", "agapanthe"], nom: "souci et agapanthe" },
-} as const;
+/** dominante = apprendre, secondaire = décrire, liante = mesurer */
+export const PALETTES: Record<Palette, Record<Famille, string>> = {
+  a: { apprendre: "gerbera", decrire: "allium", mesurer: "gypsophile" },
+  b: { apprendre: "souci", decrire: "agapanthe", mesurer: "ammi" },
+};
+
+export const NOM_ESPECE: Record<string, string> = {
+  gerbera: "gerbera", allium: "allium", gypsophile: "gypsophile",
+  souci: "souci", agapanthe: "agapanthe", ammi: "dentelle",
+};
 
 // Le siège 1 prend la palette A, le siège 2 la palette B.
 export const paletteOf = (seat: 1 | 2): Palette => (seat === 1 ? "a" : "b");
 
 const STADE: Record<number, string> = { 1: "bouton", 2: "mi", 3: "pleine" };
 
-/** L'image d'une fleur : sa place dans le bouquet donne l'espèce,
- *  sa qualité donne le stade d'ouverture. */
-export function fleurSrc(palette: Palette, index: number, quality: 1 | 2 | 3, grande = false) {
-  const espece = PALETTES[palette].especes[index % 2];
-  return `/fleurs/${palette}-${espece}-${STADE[quality]}${grande ? "@2x" : ""}.webp`;
-}
+export const especeDe = (palette: Palette, lecon: number) =>
+  PALETTES[palette][familleDe(lecon)];
 
-export function especeOf(palette: Palette, index: number) {
-  return PALETTES[palette].especes[index % 2];
+/** L'image d'une fleur : la notion donne l'espèce, la vitesse le stade. */
+export function fleurSrc(palette: Palette, lecon: number, quality: 1 | 2 | 3, grande = false) {
+  return `/fleurs/${palette}-${especeDe(palette, lecon)}-${STADE[quality]}${grande ? "@2x" : ""}.webp`;
 }
 
 /** Les deux plans de fin de partie, un par palette. */
 export const videoSrc = (palette: Palette, issue: "victoire" | "defaite") =>
   `/fleurs/${issue}-${palette}.mp4`;
 
-/** Les images que la partie va réellement afficher, à précharger. */
+/** Les images que la partie peut afficher, à précharger. */
 export function assetsOf(palette: Palette) {
   const out: string[] = [];
-  for (let i = 0; i < 2; i++) for (const q of [1, 2, 3] as const) out.push(fleurSrc(palette, i, q));
+  for (const espece of Object.values(PALETTES[palette]))
+    for (const s of Object.values(STADE)) out.push(`/fleurs/${palette}-${espece}-${s}.webp`);
   return out;
 }

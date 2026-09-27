@@ -1,6 +1,6 @@
 // L'arbitre : la seule chose qui écrit dans la base. Tourne chez Vercel, jamais sur un téléphone.
 import { admin } from "./supabaseAdmin";
-import { type BotLevel, botDraw, type Game, QUALITY_ARTICLED, qualityFor, settleRound } from "./game";
+import { type BotLevel, botDraw, type Fleur, type Game, QUALITY_ARTICLED, qualityFor, settleRound } from "./game";
 import { randomQuestion, toPublic } from "./questions";
 
 export async function loadGame(code: string): Promise<Game | null> {
@@ -34,7 +34,7 @@ export async function startBotTurn(g: Game): Promise<Partial<Game>> {
 // Applique le résultat d'un tour et fait avancer la partie.
 // `botQuality` n'est passé que pour le robot : sa fleur vient de son niveau,
 // pas de son temps de réflexion, qui n'est qu'une courte pause d'affichage.
-export async function applyTurn(g: Game, seat: 1 | 2, correct: boolean, elapsedMs: number, botQuality?: 1 | 2 | 3): Promise<Game> {
+export async function applyTurn(g: Game, seat: 1 | 2, correct: boolean, elapsedMs: number, lecon: number, botQuality?: 1 | 2 | 3): Promise<Game> {
   const name = seat === 1 ? g.p1_name : g.p2_name;
   const quality = correct ? (botQuality ?? qualityFor(elapsedMs)) : 0;
   const secs = Math.round(elapsedMs / 1000);
@@ -49,7 +49,9 @@ export async function applyTurn(g: Game, seat: 1 | 2, correct: boolean, elapsedM
     bot_delay_ms: null,
   };
   const flowersKey = seat === 1 ? "p1_flowers" : "p2_flowers";
-  const flowers = [...g[flowersKey], ...(correct ? [quality] : [])];
+  // la fleur retient la leçon dont elle vient : le bouquet devient une carte
+  const gagnee: Fleur[] = correct ? [{ q: quality as 1 | 2 | 3, l: lecon }] : [];
+  const flowers = [...g[flowersKey], ...gagnee];
   patch[flowersKey] = flowers;
 
   if (seat === 1) {

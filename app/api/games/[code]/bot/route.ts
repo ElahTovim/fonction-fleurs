@@ -11,7 +11,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ code: 
   if (Date.now() < new Date(g.bot_due_at).getTime()) return json({ game: g, wait: true });
 
   const db = admin();
-  const { data: turn } = await db.from("turns").select("id").eq("game_code", code).eq("seat", 2).eq("round", g.round).is("answered_at", null).maybeSingle();
+  const { data: turn } = await db.from("turns").select("id,question").eq("game_code", code).eq("seat", 2).eq("round", g.round).is("answered_at", null).maybeSingle();
   if (!turn) return json({ game: g });
 
   const { correct, quality } = botDraw(g.bot_level as BotLevel);
@@ -21,6 +21,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ code: 
     .eq("id", turn.id).is("answered_at", null).select("id");
   if (!closed?.length) return json({ game: await loadGame(code) });
 
-  const game = await applyTurn(g, 2, correct, elapsed, quality);
+  const lecon = (turn.question as { lesson: number }).lesson;
+  const game = await applyTurn(g, 2, correct, elapsed, lecon, quality);
   return json({ game });
 }

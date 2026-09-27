@@ -23,11 +23,17 @@ PAPIER = (248, 241, 226)
 L, H = 720, 1280
 FPS = 25
 
+# Une palette se compose comme un fleuriste compose : la dominante revient
+# le plus souvent, la secondaire soutient, la liante remplit les creux.
 ESPECES = {
-    "a": ["a-gerbera-pleine@2x.webp", "a-allium-pleine@2x.webp"],
-    "b": ["b-souci-pleine@2x.webp", "b-agapanthe-pleine@2x.webp"],
-    "intro": ["a-gerbera-pleine@2x.webp", "a-allium-pleine@2x.webp",
-              "b-souci-pleine@2x.webp", "b-agapanthe-pleine@2x.webp"],
+    "a": ["a-gerbera-pleine@2x.webp", "a-allium-pleine@2x.webp",
+          "a-gerbera-pleine@2x.webp", "a-gypsophile-pleine@2x.webp"],
+    "b": ["b-souci-pleine@2x.webp", "b-agapanthe-pleine@2x.webp",
+          "b-souci-pleine@2x.webp", "b-ammi-pleine@2x.webp"],
+    "intro": ["a-gerbera-pleine@2x.webp", "b-agapanthe-pleine@2x.webp",
+              "b-souci-pleine@2x.webp", "a-allium-pleine@2x.webp",
+              "a-gypsophile-pleine@2x.webp", "b-souci-pleine@2x.webp",
+              "a-gerbera-pleine@2x.webp", "b-ammi-pleine@2x.webp"],
 }
 FEUILLES = [f"feuille-{i}.webp" for i in range(1, 7)]
 

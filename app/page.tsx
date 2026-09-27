@@ -40,7 +40,8 @@ export default function Home() {
       </header>
 
       <div className="accueil__fleur">
-        <Flower palette="a" index={0} quality={3} size={118} grande />
+        {/* leçon 7, donc la fleur dominante de la palette A */}
+        <Flower palette="a" lecon={7} quality={3} size={118} grande />
         <p className="source">Une question, une fleur. Premier bouquet de cinq.</p>
       </div>
 

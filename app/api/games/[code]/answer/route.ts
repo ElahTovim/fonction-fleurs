@@ -27,6 +27,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ code: s
     .eq("id", turnId).is("answered_at", null).select("id");
   if (!closed?.length) return json({ error: "Déjà répondu." }, 409);
 
-  const game = await applyTurn(g, me.seat, correct, elapsed);
+  const game = await applyTurn(g, me.seat, correct, elapsed, q.lesson);
   return json({ correct, elapsedMs: elapsed, quality: correct ? qualityFor(elapsed) : 0, answer: q.answer, explain: q.explain, choices: q.choices, game });
 }

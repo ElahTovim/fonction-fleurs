@@ -18,7 +18,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ code: s
     .eq("game_code", code).eq("seat", me.seat).eq("round", g.round).is("answered_at", null).maybeSingle();
   if (open) return json({ turnId: open.id, question: toPublic(open.question as Question), revealedAt: open.revealed_at });
 
-  const q = randomQuestion();
+  // Les notions que ce joueur a déjà manquées dans cette partie reviendront
+  // plus souvent : le jeu s'ajuste à ce qui lui résiste.
+  const { data: ratees } = await db.from("turns").select("question")
+    .eq("game_code", code).eq("seat", me.seat).eq("correct", false);
+  const aRevoir = [...new Set((ratees ?? []).map((t) => (t.question as Question).lesson))];
+  // La notion du tour précédent ne revient pas tout de suite.
+  const { data: avant } = await db.from("turns").select("question")
+    .eq("game_code", code).eq("seat", me.seat).order("revealed_at", { ascending: false }).limit(1);
+  const derniere = avant?.length ? (avant[0].question as Question).lesson : 0;
+  const q = randomQuestion(aRevoir, derniere);
   const { data: turn, error } = await db.from("turns").insert({ game_code: code, seat: me.seat, round: g.round, question: q }).select("id,revealed_at").single();
   if (error) return json({ error: error.message }, 500);
   await updateGame(code, { question_public: toPublic(q) });

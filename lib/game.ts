@@ -35,6 +35,12 @@ export function botDraw(level: BotLevel) {
   return { think, correct, quality };
 }
 
+/** Une fleur gagnée : sa qualité, et la leçon dont elle vient. Les parties
+ *  d'avant ne stockaient qu'un nombre : `fleur()` accepte les deux. */
+export type Fleur = { q: 1 | 2 | 3; l: number };
+export const fleur = (x: Fleur | number): Fleur =>
+  typeof x === "number" ? { q: x as 1 | 2 | 3, l: 0 } : x;
+
 export type Game = {
   code: string;
   status: "lobby" | "playing" | "finished";
@@ -43,8 +49,8 @@ export type Game = {
   bouquet_size: number;
   p1_name: string | null;
   p2_name: string | null;
-  p1_flowers: number[];
-  p2_flowers: number[];
+  p1_flowers: (Fleur | number)[];
+  p2_flowers: (Fleur | number)[];
   turn_seat: 1 | 2;
   round: number;
   question_public: { notion: string; lesson: number; text: string; data?: string; kind: "number" | "choice"; choices?: string[] } | null;
@@ -55,7 +61,8 @@ export type Game = {
   updated_at: string;
 };
 
-export const beauty = (flowers: number[]) => flowers.reduce((s, q) => s + q, 0);
+export const beauty = (flowers: (Fleur | number)[]) =>
+  flowers.reduce<number>((s, x) => s + fleur(x).q, 0);
 
 // Fin de manche : appelée seulement après le tour du siège 2,
 // pour que les deux joueurs aient eu le même nombre d'essais.

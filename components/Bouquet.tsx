@@ -1,12 +1,21 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Flower } from "./Flower";
-import { beauty } from "@/lib/game";
+import { beauty, fleur, type Fleur } from "@/lib/game";
 import type { Palette } from "@/lib/fleurs";
 
-type Props = { name: string; flowers: number[]; size: number; active: boolean; mine: boolean; palette: Palette };
+type Props = {
+  name: string;
+  flowers: (Fleur | number)[];
+  size: number;
+  active: boolean;
+  mine: boolean;
+  palette: Palette;
+};
 
 export function Bouquet({ name, flowers, size, active, mine, palette }: Props) {
+  const gagnees = flowers.map(fleur);
+
   // La dernière fleur gagnée se pose, les autres sont déjà là.
   const [entrante, setEntrante] = useState(-1);
   const vues = useRef(flowers.length);
@@ -28,16 +37,25 @@ export function Bouquet({ name, flowers, size, active, mine, palette }: Props) {
           {mine && <em>vous</em>}
         </h2>
         <p className="joueur__compte">
-          {flowers.length} sur {size}
-          {flowers.length > 0 && <span className="joueur__beaute">beauté {beauty(flowers)}</span>}
+          {gagnees.length} sur {size}
+          {gagnees.length > 0 && <span className="joueur__beaute">beauté {beauty(flowers)}</span>}
         </p>
       </div>
       <ul className="rangee">
-        {Array.from({ length: size }, (_, i) => (
-          <li key={i}>
-            <Flower palette={palette} index={i} quality={(flowers[i] ?? 0) as 0 | 1 | 2 | 3} size={58} entrante={i === entrante} />
-          </li>
-        ))}
+        {Array.from({ length: size }, (_, i) => {
+          const f = gagnees[i];
+          return (
+            <li key={i}>
+              <Flower
+                palette={palette}
+                lecon={f?.l ?? 0}
+                quality={(f?.q ?? 0) as 0 | 1 | 2 | 3}
+                size={58}
+                entrante={i === entrante}
+              />
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

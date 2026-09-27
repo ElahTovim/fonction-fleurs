@@ -2,8 +2,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { getName, getToken, setName as saveName } from "@/lib/identity";
-import { type Game as G, QUALITY_ARTICLED, QUALITY_LABEL, SPEED_TIERS_MS } from "@/lib/game";
+import { fleur, type Game as G, QUALITY_ARTICLED, QUALITY_LABEL, SPEED_TIERS_MS } from "@/lib/game";
 import { assetsOf, paletteOf, videoSrc } from "@/lib/fleurs";
+import { lecon } from "@/lib/lecons";
+import { FAMILLES } from "@/lib/notions";
+import { useRouter } from "next/navigation";
 import type { PublicQuestion } from "@/lib/questions";
 import Link from "next/link";
 import { Bouquet } from "./Bouquet";
@@ -17,8 +20,11 @@ const post = async (url: string, body: unknown) => {
   return { ok: r.ok, data: await r.json() };
 };
 
+type Partie = G & { revanche?: string | null };
+
 export function Game({ code }: { code: string }) {
-  const [game, setGame] = useState<G | null>(null);
+  const router = useRouter();
+  const [game, setGame] = useState<Partie | null>(null);
   const [seat, setSeat] = useState<0 | 1 | 2 | null>(null);
   const [name, setName] = useState("");
   const [draft, setDraft] = useState("");
@@ -143,15 +149,19 @@ export function Game({ code }: { code: string }) {
   }
   if (!game || seat === null) return <main className="sheet"><p className="attente">Connexion à la partie</p></main>;
 
-  // Fin de partie : le plan prend tout l'écran. Ma palette, mon issue.
+  // Fin de partie : le plan, puis la carte de ce qu'on a récolté.
   if (game.status === "finished") {
     const gagne = game.winner_seat === 0 || game.winner_seat === seat;
     const issue = seat === 0 || gagne ? "victoire" : "defaite";
-    const pal = paletteOf(seat === 0 ? ((game.winner_seat || 1) as 1 | 2) : seat);
+    const monSiege = (seat === 0 ? ((game.winner_seat || 1) as 1 | 2) : seat) as 1 | 2;
+    const pal = paletteOf(monSiege);
     const nomGagnant = game.winner_seat === 1 ? game.p1_name : game.p2_name;
+    const recolte = (monSiege === 2 ? game.p2_flowers : game.p1_flowers).map(fleur);
+
     return (
       <main className="fin">
         <video className="fin__video" src={videoSrc(pal, issue)} autoPlay muted playsInline preload="auto" />
+
         <div className="fin__texte">
           <p className="kicker">Partie terminée</p>
           <p className="fin__nom">{game.winner_seat === 0 ? "Égalité" : nomGagnant}</p>
@@ -164,8 +174,61 @@ export function Game({ code }: { code: string }) {
                   ? "Votre bouquet est complet."
                   : "a terminé son bouquet avant vous."}
           </p>
-          <a className="btn" href="/" style={{ textDecoration: "none", textAlign: "center" }}>Nouvelle partie</a>
         </div>
+
+        {/* Chaque fleur dit la notion qui l'a fait pousser. Le bouquet se lit
+            donc comme la carte de ce qu'on tient, et chaque ligne ramène
+            à sa leçon. */}
+        {recolte.length > 0 && (
+          <section className="carte">
+            <h2 className="kicker">{seat === 0 ? "Son bouquet" : "Votre bouquet"}</h2>
+            <ul>
+              {recolte.map((f, i) => {
+                const l = lecon(f.l);
+                return (
+                  <li key={i}>
+                    <Flower palette={pal} lecon={f.l} quality={f.q} size={40} />
+                    <Link className="carte__notion" href={`/bases/${f.l}`}>
+                      {l ? l.titre : "notion"}
+                    </Link>
+                    <span className="carte__stade">{QUALITY_LABEL[f.q]}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="carte__legende">
+              {Object.entries(FAMILLES)
+                .map(([, fam]) => fam.nom)
+                .join(", ")} : trois familles, trois fleurs.
+            </p>
+          </section>
+        )}
+
+        <nav className="fin__pied">
+          {seat !== 0 && (
+            game.revanche ? (
+              <button className="btn" onClick={() => router.push(`/p/${game.revanche}`)}>
+                Rejoindre la revanche
+              </button>
+            ) : (
+              <button
+                className="btn"
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  const { ok, data } = await post(`/api/games/${code}/revanche`, { token: token.current });
+                  setBusy(false);
+                  if (ok) router.push(`/p/${data.code}`);
+                  else setError(data.error);
+                }}
+              >
+                {busy ? "…" : "Revanche"}
+              </button>
+            )
+          )}
+          <Link className="btn btn--quiet" href="/">Nouvelle partie</Link>
+          {error && <p className="source" style={{ color: "var(--clay)" }} role="alert">{error}</p>}
+        </nav>
       </main>
     );
   }
@@ -176,7 +239,6 @@ export function Game({ code }: { code: string }) {
   const secs = Math.floor(elapsedMs / 1000);
   const tier = elapsedMs <= SPEED_TIERS_MS.epanouie ? 3 : elapsedMs <= SPEED_TIERS_MS.fleur ? 2 : 1;
   const maPalette = paletteOf(seat === 0 ? 1 : seat);
-  const mesFleurs = seat === 2 ? game.p2_flowers : game.p1_flowers;
 
   return (
     <main className="sheet">
@@ -235,7 +297,7 @@ export function Game({ code }: { code: string }) {
         <section className={`panel verdict ${result.correct ? "verdict--ok" : "verdict--ko"}`}>
           {result.correct ? (
             <>
-              <Flower palette={maPalette} index={mesFleurs.length - 1} quality={result.quality as 1 | 2 | 3} size={150} grande entrante />
+              <Flower palette={maPalette} lecon={result.lecon} quality={result.quality as 1 | 2 | 3} size={150} grande entrante />
               <p className="verdict__line">Juste, en <span className="chiffre">{Math.round(result.elapsedMs / 1000)}</span> s</p>
               <p className="lede">Vous gagnez {QUALITY_ARTICLED[result.quality]}.</p>
             </>

@@ -41,7 +41,7 @@ function mcq(base: Omit<Question, "kind" | "choices" | "answer">, correct: strin
 const TRIPLES_2D = [[3, 4, 5], [6, 8, 10], [5, 12, 13], [8, 15, 17]];
 const TRIPLES_3D = [[1, 2, 2, 3], [2, 3, 6, 7], [4, 4, 7, 9], [1, 4, 8, 9], [2, 6, 9, 11]];
 
-const generators: Array<() => Question> = [
+const GENERATEURS: Array<() => Question> = [
   // Leçon 1 : fonction et argument
   () => {
     const a = nz(-5, 9), b = ri(-9, 9), x = ri(-5, 8);
@@ -177,7 +177,7 @@ const generators: Array<() => Question> = [
     const cands = [0, 1, 2].map(() => [ri(0, 10), ri(0, 10)]);
     const d2 = cands.map(c => (c[0] - P[0]) ** 2 + (c[1] - P[1]) ** 2);
     const min = Math.min(...d2);
-    if (d2.filter(d => d === min).length > 1) return generators[11]();
+    if (d2.filter(d => d === min).length > 1) return GENERATEURS[11]();
     const best = d2.indexOf(min);
     return mcq(
       { notion: "Minimisation", lesson: 9, text: `Lequel de ces points est le plus proche de P = ${vec(P)} ?`, data: cands.map((c, i) => `${"ABC"[i]} = ${vec(c)}`).join("    "), explain: `Distances au carré : ${d2.join(", ")}. Le plus petit est ${"ABC"[best]}.` },
@@ -210,8 +210,20 @@ const generators: Array<() => Question> = [
   },
 ];
 
-export function randomQuestion(): Question {
-  return pick(generators)();
+/** La leçon que chaque générateur interroge, dans l'ordre du tableau. */
+const LECON_DE = [1, 2, 3, 3, 4, 5, 6, 7, 7, 8, 9, 9, 10, 10];
+
+/** Le tirage n'est pas uniforme : si le joueur a déjà manqué des notions,
+ *  elles reviennent deux fois sur trois. Le jeu cesse d'être un contrôle
+ *  pour devenir un entraînement sur ce qui résiste. */
+export function randomQuestion(aRevoir: number[] = [], derniere = 0): Question {
+  // On insiste sur ce qui a résisté, sans matraquer : une question sur deux,
+  // et jamais deux fois d'affilée la même notion s'il en reste d'autres.
+  const eviter = (i: number) => LECON_DE[i] !== derniere;
+  const cibles = GENERATEURS.filter((_, i) => aRevoir.includes(LECON_DE[i]) && eviter(i));
+  if (cibles.length && Math.random() < 0.5) return pick(cibles)();
+  const reste = GENERATEURS.filter((_, i) => eviter(i));
+  return pick(reste.length ? reste : GENERATEURS)();
 }
 
 export function toPublic(q: Question): PublicQuestion {
