@@ -119,7 +119,7 @@ img { display: block; }
 .joueur--actif { opacity: 1; }
 .joueur__ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .joueur__nom { font-size: 19px; font-weight: 500; }
-.joueur__nom em { font-style: italic; font-size: 15px; color: var(--ink-3); margin-left: 8px; font-weight: 400; }
+.joueur__nom em { font-style: normal; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); margin-left: 9px; font-weight: 500; }
 .joueur__compte { font-size: 14px; color: var(--ink-3); }
 .joueur__beaute { margin-left: 12px; }
 
@@ -151,9 +151,9 @@ img { display: block; }
 }
 
 .qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
-.chrono { display: flex; align-items: baseline; gap: 9px; }
-.chrono__n { font-size: 25px; font-weight: 500; color: var(--aubergine); }
-.chrono__mot { font-size: 14px; font-style: italic; color: var(--ink-3); }
+.chrono { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex: none; }
+.chrono__n { font-size: 26px; font-weight: 500; color: var(--aubergine); line-height: 1; }
+.chrono__mot { font-size: 13px; color: var(--ink-3); white-space: nowrap; }
 
 .answer { display: flex; gap: 12px; align-items: flex-end; }
 .answer .input { flex: 1; min-width: 0; }
@@ -181,9 +181,9 @@ img { display: block; }
 .verdict { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
 .verdict__line { font-size: 23px; font-weight: 500; }
 .verdict--ko .verdict__line { color: var(--clay); }
-.verdict__why { font-size: 16px; color: var(--ink-2); font-style: italic; max-width: 30em; }
+.verdict__why { font-size: 16px; color: var(--ink-2); max-width: 30em; }
 
-.log { font-size: 15px; color: var(--ink-3); font-style: italic; }
+.log { font-size: 15px; color: var(--ink-3); }
 .share { font-size: 14px; word-break: break-all; color: var(--ink-2); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 12px 0; }
 
 .legende { display: flex; justify-content: space-between; align-items: flex-end; }
@@ -198,17 +198,20 @@ img { display: block; }
 .sheet--accueil .field { margin-bottom: 18px; }
 .solo { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
 
-/* Le lien discret du bas, centré. */
-.lien-bas {
-  margin: 26px auto 0;
-  text-align: center;
-  color: var(--ink-2);
-  font-size: 14px;
-  text-decoration: none;
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: 2px;
-}
 .lien { text-decoration: none; }
+
+/* « Les bases » : un vrai bouton, pas un lien qui se cache. */
+.btn--bases {
+  margin-top: 34px;
+  text-decoration: none;
+  text-align: center;
+  background: none;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  padding: 23px;
+  font-size: 14px;
+  letter-spacing: 0.22em;
+}
 
 /* Les bases : la liste des dix notions. */
 .notions { list-style: none; display: flex; flex-direction: column; }
@@ -223,7 +226,7 @@ img { display: block; }
 }
 .notions__n { grid-row: span 2; font-variant-numeric: lining-nums; color: var(--ink-3); font-size: 15px; padding-top: 2px; }
 .notions__titre { font-size: 18px; font-weight: 500; }
-.notions__sous { font-size: 14px; color: var(--ink-3); font-style: italic; }
+.notions__sous { font-size: 14px; color: var(--ink-3); }
 
 /* Une leçon : du texte, rien d'autre. */
 .lecon__nom { font-size: clamp(1.8rem, 8vw, 2.2rem); }
@@ -245,7 +248,7 @@ img { display: block; }
 /* Depuis un verdict raté : aller relire la notion manquée. */
 .reviser { font-size: 15px; color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 2px; }
 
-.attente { display: flex; align-items: center; gap: 10px; color: var(--ink-2); font-style: italic; }
+.attente { display: flex; align-items: center; gap: 10px; color: var(--ink-2); }
 .attente::before {
   content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3);
   animation: battre 1.3s ease-in-out infinite;
@@ -276,7 +279,6 @@ img { display: block; }
   animation: monter 700ms var(--ease-out) 900ms backwards;
 }
 .fin__nom { font-size: clamp(1.9rem, 8.5vw, 2.5rem); font-weight: 500; letter-spacing: -0.02em; line-height: 1.05; }
-.fin__quoi { font-size: 16px; color: var(--ink-2); font-style: italic; }
 .fin__pied { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
 .fin__pied .btn { text-decoration: none; text-align: center; }
 
@@ -285,15 +287,13 @@ img { display: block; }
 .carte ul { list-style: none; display: flex; flex-direction: column; }
 .carte li {
   display: grid;
-  grid-template-columns: 44px 1fr auto;
+  grid-template-columns: 46px 1fr;
   align-items: center;
   gap: 12px;
   padding: 7px 0;
 }
 .carte li + li { border-top: 1px solid var(--rule); }
 .carte__notion { font-size: 17px; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
-.carte__stade { font-size: 13px; font-style: italic; color: var(--ink-3); }
-.carte__legende { font-size: 13px; color: var(--ink-3); font-style: italic; }
 
 /* Plan d'ouverture : il couvre la page le temps que les fleurs se rassemblent. */
 .intro {
@@ -331,4 +331,4 @@ img { display: block; }
 }
 .seminaire__etiquette + .seminaire__etiquette,
 .seminaire .lecon__para + .seminaire__etiquette { margin-top: 12px; }
-.seminaire__cas { font-size: 18px; font-style: italic; color: var(--ink); }
+.seminaire__cas { font-size: 18px; font-weight: 500; color: var(--ink); }

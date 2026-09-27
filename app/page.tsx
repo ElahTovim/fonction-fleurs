@@ -30,8 +30,6 @@ export default function Home() {
     router.push(`/p/${data.code}`);
   }
 
-  // Un seul écran, sans titre : le plan d'ouverture a déjà tout dit.
-  // Une fleur, un prénom, deux façons de partir, et les bases en bas.
   return (
     <main className="sheet sheet--accueil">
       <header className="masthead">
@@ -40,9 +38,7 @@ export default function Home() {
       </header>
 
       <div className="accueil__fleur">
-        {/* leçon 7, donc la fleur dominante de la palette A */}
-        <Flower palette="a" lecon={7} quality={3} size={118} grande />
-        <p className="source">Une question, une fleur. Premier bouquet de cinq.</p>
+        <Flower palette="a" lecon={7} quality={3} size={148} grande />
       </div>
 
       <div className="field">
@@ -78,7 +74,7 @@ export default function Home() {
         </button>
       </div>
 
-      <Link className="lien-bas" href="/bases">Les bases</Link>
+      <Link className="btn btn--bases" href="/bases">Les bases</Link>
     </main>
   );
 }

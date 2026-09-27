@@ -2,10 +2,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { getName, getToken, setName as saveName } from "@/lib/identity";
-import { fleur, type Game as G, QUALITY_ARTICLED, QUALITY_LABEL, SPEED_TIERS_MS } from "@/lib/game";
+import { fleur, type Game as G, QUALITY_LABEL, SPEED_TIERS_MS } from "@/lib/game";
 import { assetsOf, paletteOf, videoSrc } from "@/lib/fleurs";
 import { lecon } from "@/lib/lecons";
-import { FAMILLES } from "@/lib/notions";
 import { useRouter } from "next/navigation";
 import type { PublicQuestion } from "@/lib/questions";
 import Link from "next/link";
@@ -165,15 +164,6 @@ export function Game({ code }: { code: string }) {
         <div className="fin__texte">
           <p className="kicker">Partie terminée</p>
           <p className="fin__nom">{game.winner_seat === 0 ? "Égalité" : nomGagnant}</p>
-          <p className="fin__quoi">
-            {game.winner_seat === 0
-              ? "Deux bouquets d'égale beauté."
-              : seat === 0
-                ? "a terminé son bouquet."
-                : gagne
-                  ? "Votre bouquet est complet."
-                  : "a terminé son bouquet avant vous."}
-          </p>
         </div>
 
         {/* Chaque fleur dit la notion qui l'a fait pousser. Le bouquet se lit
@@ -191,16 +181,10 @@ export function Game({ code }: { code: string }) {
                     <Link className="carte__notion" href={`/bases/${f.l}`}>
                       {l ? l.titre : "notion"}
                     </Link>
-                    <span className="carte__stade">{QUALITY_LABEL[f.q]}</span>
                   </li>
                 );
               })}
             </ul>
-            <p className="carte__legende">
-              {Object.entries(FAMILLES)
-                .map(([, fam]) => fam.nom)
-                .join(", ")} : trois familles, trois fleurs.
-            </p>
           </section>
         )}
 
@@ -257,7 +241,6 @@ export function Game({ code }: { code: string }) {
           {seat === 1 ? (
             <>
               <h2 className="question">Envoyez ce lien.</h2>
-              <p className="lede">La première personne qui l&apos;ouvre et donne son prénom prend la seconde place.</p>
               <p className="share">{typeof window !== "undefined" ? window.location.href : ""}</p>
               <button className="btn" onClick={share}>{copied ? "Lien copié" : "Partager le lien"}</button>
             </>
@@ -285,7 +268,6 @@ export function Game({ code }: { code: string }) {
           <p className="attente">{game.mode === "solo" ? `${opponent} cherche` : `Au tour de ${opponent}`}</p>
           {game.question_public && (
             <>
-              <p className="source">Sa question, pour vous entraîner en attendant.</p>
               <p className="question">{game.question_public.text}</p>
               {game.question_public.data && <p className="data">{game.question_public.data}</p>}
             </>
@@ -299,7 +281,6 @@ export function Game({ code }: { code: string }) {
             <>
               <Flower palette={maPalette} lecon={result.lecon} quality={result.quality as 1 | 2 | 3} size={150} grande entrante />
               <p className="verdict__line">Juste, en <span className="chiffre">{Math.round(result.elapsedMs / 1000)}</span> s</p>
-              <p className="lede">Vous gagnez {QUALITY_ARTICLED[result.quality]}.</p>
             </>
           ) : (
             <>
@@ -324,7 +305,6 @@ export function Game({ code }: { code: string }) {
       {myTurn && !result && !turn && (
         <section className="panel">
           <h2 className="question">À vous.</h2>
-          <p className="lede">Le chronomètre part quand la question s&apos;affiche, pas avant.</p>
           <button className="btn" disabled={busy} onClick={ready}>{busy ? "Tirage" : "Voir la question"}</button>
         </section>
       )}
@@ -332,7 +312,7 @@ export function Game({ code }: { code: string }) {
       {myTurn && turn && (
         <section className="panel">
           <div className="qhead">
-            <p className="kicker">{turn.question.notion}, leçon {turn.question.lesson}</p>
+            <p className="kicker">{turn.question.notion}</p>
             <p className="chrono">
               <span className="chrono__n">{secs}</span>
               <span className="chrono__mot">{QUALITY_LABEL[tier]}</span>

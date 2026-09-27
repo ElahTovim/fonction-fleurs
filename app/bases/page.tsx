@@ -13,12 +13,7 @@ export default function Bases() {
         <span className="meta">les bases</span>
       </header>
 
-      {/* Le fil rouge du cours : une phrase qui contient les dix notions. */}
       <p className="fil"><Riche texte={FIL_ROUGE} /></p>
-      <p className="source">
-        Chaque mot en gras est une leçon. Chacune dit aussi à quoi elle sert dans un système
-        d&apos;IA, avec un cas concret.
-      </p>
 
       <ol className="notions">
         {LECONS.map((l) => (
@@ -32,7 +27,7 @@ export default function Bases() {
         ))}
       </ol>
 
-      <Link className="lien-bas" href="/">Jouer</Link>
+      <Link className="btn btn--bases" href="/">Jouer</Link>
     </main>
   );
 }
